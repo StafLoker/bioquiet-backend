@@ -67,12 +67,27 @@ def _serialize_zone(feature: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _points(feature: dict[str, Any]) -> list[list[float]]:
+    geom = feature["geometry"]
+    if geom is None:
+        return []
+    coords = geom["coordinates"]
+    if geom["type"] == "Polygon":
+        # coordinates[ring][point]
+        return [pt for ring in coords for pt in ring]
+    else:
+        # MultiPolygon: coordinates[polygon][ring][point]
+        return [pt for polygon in coords for ring in polygon for pt in ring]
+
+
 def get_zepa_by_bbox(minLon: float, minLat: float, maxLon: float, maxLat: float) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for feature in GEOJSON["features"]:
-        coords: list[list[float]] = feature["geometry"]["coordinates"][0]
-        lons = [c[0] for c in coords]
-        lats = [c[1] for c in coords]
+        pts = _points(feature)
+        if not pts:
+            continue
+        lons = [pt[0] for pt in pts]
+        lats = [pt[1] for pt in pts]
         if max(lons) >= minLon and min(lons) <= maxLon and max(lats) >= minLat and min(lats) <= maxLat:
             results.append(_serialize_zone(feature))
     return results
