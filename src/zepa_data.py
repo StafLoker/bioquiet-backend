@@ -2,67 +2,48 @@ import json
 import os
 from typing import Any
 
-_data_path = os.path.join(os.path.dirname(__file__), "data", "zepa_simplified.geojson")
+_data_dir = os.path.join(os.path.dirname(__file__), "data")
 
-with open(_data_path) as f:
-    GEOJSON: dict[str, Any] = json.load(f)
 
-# Red Natura 2000 CCAA codes (2-digit prefix after "ES" in localId)
-# Source: Ministerio MITECO / INSPIRE codelist
-_CCAA_CODES: dict[str, str] = {
-    "00": "Plurirregional",
-    "11": "Galicia",
-    "12": "Principado de Asturias",
-    "13": "Cantabria",
-    "21": "País Vasco",
-    "22": "Comunidad Foral de Navarra",
-    "23": "La Rioja",
-    "24": "Aragón",
-    "30": "Comunidad de Madrid",
-    "31": "Castilla y León",  # also 41-46
-    "32": "Castilla-La Mancha",
-    "33": "Extremadura",
-    "41": "Castilla y León",
-    "42": "Castilla y León",
-    "43": "Castilla y León",
-    "44": "Castilla y León",
-    "45": "Castilla y León",
-    "46": "Castilla y León",
-    "51": "Cataluña",
-    "52": "Comunitat Valenciana",
-    "53": "Illes Balears",
-    "61": "Andalucía",
-    "62": "Región de Murcia",
-    "63": "Ciudad de Ceuta",
-    "64": "Ciudad de Melilla",
-    "70": "Canarias",
-    "ZZ": "Espacio marino plurirregional",
-}
+def _load(name: str) -> Any:
+    with open(os.path.join(_data_dir, name), encoding="utf-8") as f:
+        return json.load(f)
+
+
+_GEOJSON: dict[str, Any] = _load("zepa_simplified.geojson")
+_SITES: dict[str, Any] = _load("zepa_sites.json")
+_HABITATS: dict[str, Any] = _load("zepa_habitats.json")
+_SPECIES: dict[str, Any] = _load("zepa_species.json")
+_IMPACTS: dict[str, Any] = _load("zepa_impacts.json")
+_MANAGEMENT: dict[str, Any] = _load("zepa_management.json")
 
 # Noise thresholds (dB LAeq) for ZEPA zones.
 # Based on: normativa espacios naturales (sensibilidad acústica alta) +
 # scientific literature on bird population response to noise.
 # Safe: < 45 dB  |  Warning: 45–60 dB  |  Danger: > 60 dB
-NOISE_THRESHOLDS: dict[str, int] = {
+_NOISE_THRESHOLDS: dict[str, int] = {
     "db_safe": 45,
     "db_warning": 60,
 }
 
 
-def _ccaa_from_local_id(local_id: str) -> str:
-    """Derive the autonomous community name from a Red Natura 2000 localId."""
-    code = local_id[2:4]  # characters at index 2-3, e.g. "ES41xxxx" → "41"
-    return _CCAA_CODES.get(code, "Desconocida")
-
-
 def _serialize_zone(feature: dict[str, Any]) -> dict[str, Any]:
     props = feature["properties"]
     local_id: str = props.get("localId", "")
+    site = _SITES.get(local_id, {})
     return {
         "id": local_id,
         "name": props.get("SOName", ""),
-        "ccaa": _ccaa_from_local_id(local_id),
-        "noise_thresholds": NOISE_THRESHOLDS,
+        "noise_thresholds": _NOISE_THRESHOLDS,
+        "area_ha": site.get("area_ha"),
+        "date_spa": site.get("date_spa"),
+        "spa_legal_ref": site.get("spa_legal_ref"),
+        "description": site.get("description"),
+        "quality": site.get("quality"),
+        "habitats": _HABITATS.get(local_id, []),
+        "species": _SPECIES.get(local_id, []),
+        "impacts": _IMPACTS.get(local_id, []),
+        "management": _MANAGEMENT.get(local_id, []),
         "geometry": feature["geometry"],
     }
 
@@ -82,7 +63,7 @@ def _points(feature: dict[str, Any]) -> list[list[float]]:
 
 def get_zepa_by_bbox(minLon: float, minLat: float, maxLon: float, maxLat: float) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
-    for feature in GEOJSON["features"]:
+    for feature in _GEOJSON["features"]:
         pts = _points(feature)
         if not pts:
             continue

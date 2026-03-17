@@ -12,8 +12,9 @@
 # Features
 
 - Query ZEPA zones by bounding box (`minLon minLat maxLon maxLat`)
-- Returns zone name, autonomous community, geometry, and noise thresholds
-- Data: Red Natura 2000, MITECO (CC BY 4.0), 602 zones
+- Returns zone name, geometry, and noise thresholds
+- Returns ecological metadata: habitats, species, threats, and management body
+- Data: Red Natura 2000 cartography + CNTRYES database, MITECO (CC BY 4.0), 602 zones
 
 
 # Installation
@@ -44,8 +45,24 @@ GET /api/v1/zepa?lonWest=-3.72&latSouth=40.38&lonEast=-3.68&latNorth=40.42
   "data": [
     {
       "id": "ES3000009",
-      "name": "Cuenca del río Manzanares",
-      "ccaa": "Comunidad de Madrid",
+      "name": "Cortados y cantiles de los ríos Jarama y Manzanares",
+      "area_ha": 27983.0,
+      "date_spa": "1993-12-01",
+      "spa_legal_ref": null,
+      "description": "Descripción ecológica del espacio...",
+      "quality": "G",
+      "habitats": [
+        { "code": "6220", "description": "Pseudo-steppe with grasses...", "priority": true, "cover_ha": 120.5, "representativity": "B", "conservation": "B", "global_assessment": "B" }
+      ],
+      "species": [
+        { "code": "A136", "name": "Charadrius dubius", "group": "Birds", "population_type": "c", "abundance": "P", "conservation": "C", "global": "C" }
+      ],
+      "impacts": [
+        { "code": "D01.04", "description": "railway lines, TGV", "intensity": "MEDIUM", "occurrence": "IN", "type": "N" }
+      ],
+      "management": [
+        { "org_name": "Comunidad de Madrid...", "org_email": "...", "plan_url": null, "measures": "..." }
+      ],
       "noise_thresholds": { "db_safe": 45, "db_warning": 60 },
       "geometry": { "type": "MultiPolygon", "coordinates": ["..."] }
     }
@@ -54,4 +71,5 @@ GET /api/v1/zepa?lonWest=-3.72&latSouth=40.38&lonEast=-3.68&latNorth=40.42
 }
 ```
 
-> See [`docs/zepa.md`](docs/zepa.md) for data preparation instructions.
+> See [`docs/zepa.md`](docs/zepa.md) for geometry data preparation instructions.
+> See [`docs/cntryes.md`](docs/cntryes.md) for ecological metadata preparation instructions.
