@@ -18,10 +18,14 @@
 
 # Features
 
-- Query ZEPA zones by bounding box (`minLon minLat maxLon maxLat`)
-- Returns zone name, geometry, and noise thresholds
-- Returns ecological metadata: habitats, species, threats, and management body
+- Query ZEPA zones by bounding box — returns geometry, noise thresholds, and ecological metadata (habitats, species, threats, and management body)
 - Data: Red Natura 2000 cartography + CNTRYES database, MITECO (CC BY 4.0), 602 zones
+
+# Database
+
+## Zepa
+
+![zepa](zepa.png)
 
 
 # Installation
@@ -41,7 +45,6 @@ uv run python src/app.py
 uv run gunicorn -w 2 -b 0.0.0.0:8000 --chdir src app:app
 ```
 
-Full API reference (OpenAPI): https://stafloker.github.io/bioquiet-backend/
-
 > See [`docs/zepa.md`](docs/zepa.md) for geometry data preparation instructions.
+>
 > See [`docs/cntryes.md`](docs/cntryes.md) for ecological metadata preparation instructions.

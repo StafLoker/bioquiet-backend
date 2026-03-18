@@ -22,7 +22,7 @@ def error(message: str, metadata: dict = {}) -> tuple[Response, int]:
     }), 400
 
 
-@app.route("/api/v1/zepa")
+@app.route("/api/v1/zones/zepa")
 def zepa() -> Response:
     params = request.args
     missing = [p for p in ("lonWest", "latSouth", "lonEast", "latNorth") if p not in params]

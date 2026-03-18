@@ -12,7 +12,7 @@ info:
       management), MITECO, updated end of 2023.
 
     Both sources are published under **CC BY 4.0** — free to use with attribution.
-  version: 1.0.0
+  version: 1.0.1
   license:
     name: CC BY 4.0
     url: https://creativecommons.org/licenses/by/4.0/
@@ -22,7 +22,7 @@ servers:
     description: Production
 
 paths:
-  /api/v1/zepa:
+  /api/v1/zones/zepa:
     get:
       summary: Get ZEPA zones by bounding box
       description: |
