@@ -2,9 +2,16 @@
    <img width="150" height="150" src="logo.png" alt="Logo">
    <h1><b>bioquiet-backend</b></h1>
    <p><i>~ REST API for ZEPA protected zones ~</i></p>
+   <p align="center">
+      <a href="https://bioquiet-backend-production.up.railway.app/">Backend</a> ·
+      <a href="https://stafloker.github.io/bioquiet-backend/">API Docs</a> ·
+      <a href="https://github.com/StafLoker/bioquiet-backend/releases">Releases</a>
+   </p>
 </div>
 
 <div align="center">
+   <a href="https://github.com/StafLoker/bioquiet-backend/releases"><img src="https://img.shields.io/github/release-pre/StafLoker/bioquiet-backend.svg?style=flat" alt="latest version"/></a>
+
    <p>Returns ZEPA (Special Bird Protection Areas) polygons and noise thresholds for a given bounding box.</p>
 </div>
 
