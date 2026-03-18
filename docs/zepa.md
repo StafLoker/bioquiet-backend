@@ -269,14 +269,47 @@ el área visible en el mapa) y el backend devuelve solo las ZEPA que intersectan
 ese rectángulo:
 
 ```
-GET /zepa?bbox=-3.72,40.38,-3.68,40.42
-             │     │     │     │
-           minLon minLat maxLon maxLat
+GET /api/v1/zepa?lonWest=-3.72&latSouth=40.38&lonEast=-3.68&latNorth=40.42
 ```
 
-Si el usuario está en una zona sin ZEPA, la respuesta es `"features": []`.
+Si el usuario está en una zona sin ZEPA:
+
+```json
+{
+  "status": "success",
+  "message": "No ZEPA zones found in the requested area.",
+  "data": [],
+  "metadata": { "count": 0 }
+}
+```
+
 Si está dentro de una ZEPA, la app recibe el polígono y puede hacer el cálculo
-de point-in-polygon para mostrar la advertencia de ruido.
+de point-in-polygon para mostrar la advertencia de ruido:
+
+```json
+{
+  "status": "success",
+  "message": "1 ZEPA zone found in the requested area.",
+  "data": [
+    {
+      "id": "ES3000009",
+      "name": "Cortados y cantiles de los ríos Jarama y Manzanares",
+      "noise_thresholds": { "db_safe": 45, "db_warning": 60 },
+      "area_ha": 27983.0,
+      "date_spa": "1993-12-01",
+      "spa_legal_ref": null,
+      "description": "Descripción ecológica...",
+      "quality": "G",
+      "habitats": [...],
+      "species": [...],
+      "impacts": [...],
+      "management": [...],
+      "geometry": { "type": "MultiPolygon", "coordinates": [...] }
+    }
+  ],
+  "metadata": { "count": 1 }
+}
+```
 
 ## Fuente y licencia
 

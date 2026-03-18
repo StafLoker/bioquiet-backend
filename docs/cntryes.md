@@ -190,33 +190,43 @@ puede añadirse al `.gitignore`.
 ## Cómo usa el backend estos ficheros
 
 Al arrancar, el backend carga los seis ficheros en memoria RAM. Cuando llega
-una petición con un `bbox`, además de la geometría devuelve los metadatos
-ecológicos completos de cada ZEPA que intersecta:
+una petición con un `bbox`, devuelve la geometría y los metadatos ecológicos
+completos de cada ZEPA que intersecta:
+
+```
+GET /api/v1/zepa?lonWest=-3.72&latSouth=40.38&lonEast=-3.68&latNorth=40.42
+```
 
 ```json
 {
-  "id": "ES3000009",
-  "name": "Cortados y cantiles de los ríos Jarama y Manzanares",
-  "ccaa": "Comunidad de Madrid",
-  "area_ha": 27983.0,
-  "date_spa": "1993-12-01",
-  "spa_legal_ref": null,
-  "description": "Descripción ecológica del espacio...",
-  "quality": "G",
-  "habitats": [
-    { "code": "6220", "description": "Pseudo-steppe with grasses...", "priority": true, "cover_ha": 120.5, "representativity": "B", "conservation": "B", "global_assessment": "B" }
+  "status": "success",
+  "message": "1 ZEPA zone found in the requested area.",
+  "data": [
+    {
+      "id": "ES3000009",
+      "name": "Cortados y cantiles de los ríos Jarama y Manzanares",
+      "noise_thresholds": { "db_safe": 45, "db_warning": 60 },
+      "area_ha": 27983.0,
+      "date_spa": "1993-12-01",
+      "spa_legal_ref": null,
+      "description": "Descripción ecológica del espacio...",
+      "quality": "G",
+      "habitats": [
+        { "code": "6220", "description": "Pseudo-steppe with grasses...", "priority": true, "cover_ha": 120.5, "representativity": "B", "conservation": "B", "global_assessment": "B" }
+      ],
+      "species": [
+        { "code": "A136", "name": "Charadrius dubius", "group": "Birds", "population_type": "c", "abundance": "P", "conservation": "C", "global": "C" }
+      ],
+      "impacts": [
+        { "code": "D01.04", "description": "railway lines, TGV", "intensity": "MEDIUM", "occurrence": "IN", "type": "N" }
+      ],
+      "management": [
+        { "org_name": "Comunidad de Madrid...", "org_email": "...", "plan_url": null, "measures": "..." }
+      ],
+      "geometry": { "type": "MultiPolygon", "coordinates": ["..."] }
+    }
   ],
-  "species": [
-    { "code": "A136", "name": "Charadrius dubius", "group": "Birds", "population_type": "c", "abundance": "P", "conservation": "C", "global": "C" }
-  ],
-  "impacts": [
-    { "code": "D01.04", "description": "railway lines, TGV", "intensity": "MEDIUM", "occurrence": "IN", "type": "N" }
-  ],
-  "management": [
-    { "org_name": "Comunidad de Madrid...", "org_email": "...", "plan_url": null, "measures": "..." }
-  ],
-  "noise_thresholds": { "db_safe": 45, "db_warning": 60 },
-  "geometry": { "type": "MultiPolygon", "coordinates": ["..."] }
+  "metadata": { "count": 1 }
 }
 ```
 

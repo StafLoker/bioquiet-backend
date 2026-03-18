@@ -37,9 +37,12 @@ def zepa() -> Response:
         return error("Query parameters must be valid decimal numbers")
 
     zones = get_zepa_by_bbox(minLon, minLat, maxLon, maxLat)
+    count = len(zones)
+    message = f"{count} ZEPA zone{'s' if count != 1 else ''} found in the requested area." if count else "No ZEPA zones found in the requested area."
     return success(
         data=zones,
-        metadata={"count": len(zones)},
+        message=message,
+        metadata={"count": count},
     )
 
 
