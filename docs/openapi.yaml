@@ -18,7 +18,7 @@ info:
     url: https://creativecommons.org/licenses/by/4.0/
 
 servers:
-  - url: https://bioquiet-backend.onrender.com
+  - url: https://bioquiet-backend-production.up.railway.app
     description: Production
 
 paths:
