@@ -1,0 +1,400 @@
+openapi: 3.1.0
+
+info:
+  title: bioquiet-backend
+  description: |
+    REST API that returns ZEPA (Special Bird Protection Areas) zones and their
+    ecological metadata for a given geographic bounding box.
+
+    Data sources:
+    - **Geometry**: Red Natura 2000 cartography, MITECO, updated December 2024.
+    - **Ecological metadata**: CNTRYES database (habitats, species, threats,
+      management), MITECO, updated end of 2023.
+
+    Both sources are published under **CC BY 4.0** — free to use with attribution.
+  version: 1.0.0
+  license:
+    name: CC BY 4.0
+    url: https://creativecommons.org/licenses/by/4.0/
+
+servers:
+  - url: https://bioquiet-backend.onrender.com
+    description: Production
+
+paths:
+  /api/v1/zepa:
+    get:
+      summary: Get ZEPA zones by bounding box
+      description: |
+        Returns all ZEPA zones whose bounding box intersects the given
+        geographic rectangle. Each zone includes its geometry and full
+        ecological metadata from the CNTRYES database.
+      parameters:
+        - name: lonWest
+          in: query
+          required: true
+          description: Western longitude of the bounding box (decimal degrees, WGS84)
+          schema:
+            type: number
+            format: float
+            example: -3.72
+        - name: latSouth
+          in: query
+          required: true
+          description: Southern latitude of the bounding box (decimal degrees, WGS84)
+          schema:
+            type: number
+            format: float
+            example: 40.38
+        - name: lonEast
+          in: query
+          required: true
+          description: Eastern longitude of the bounding box (decimal degrees, WGS84)
+          schema:
+            type: number
+            format: float
+            example: -3.68
+        - name: latNorth
+          in: query
+          required: true
+          description: Northern latitude of the bounding box (decimal degrees, WGS84)
+          schema:
+            type: number
+            format: float
+            example: 40.42
+      responses:
+        "200":
+          description: List of ZEPA zones intersecting the bounding box (may be empty)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              examples:
+                found:
+                  summary: One zone found
+                  value:
+                    status: success
+                    message: "1 ZEPA zone found in the requested area."
+                    data:
+                      - id: ES3000009
+                        name: "Cortados y cantiles de los ríos Jarama y Manzanares"
+                        noise_thresholds:
+                          db_safe: 45
+                          db_warning: 60
+                        area_ha: 27983.0
+                        date_spa: "1993-12-01"
+                        spa_legal_ref: null
+                        description: "Descripción ecológica del espacio..."
+                        quality: "G"
+                        habitats:
+                          - code: "6220"
+                            description: "Pseudo-steppe with grasses and annuals of the Thero-Brachypodietea"
+                            priority: true
+                            cover_ha: 120.5
+                            representativity: "B"
+                            conservation: "B"
+                            global_assessment: "B"
+                        species:
+                          - code: "A136"
+                            name: "Charadrius dubius"
+                            group: "Birds"
+                            population_type: "c"
+                            abundance: "P"
+                            conservation: "C"
+                            global: "C"
+                        impacts:
+                          - code: "D01.04"
+                            description: "railway lines, TGV"
+                            intensity: "MEDIUM"
+                            occurrence: "IN"
+                            type: "N"
+                        management:
+                          - org_name: "Comunidad de Madrid - Dirección General..."
+                            org_email: "medioambiente@madrid.org"
+                            plan_url: null
+                            measures: "..."
+                        geometry:
+                          type: MultiPolygon
+                          coordinates: ["..."]
+                    metadata:
+                      count: 1
+                not_found:
+                  summary: No zones found
+                  value:
+                    status: success
+                    message: "No ZEPA zones found in the requested area."
+                    data: []
+                    metadata:
+                      count: 0
+        "400":
+          description: Missing or invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missing_params:
+                  summary: Missing parameters
+                  value:
+                    status: error
+                    message: "Missing required query parameters: lonWest, latSouth"
+                    data: null
+                    metadata: {}
+                invalid_number:
+                  summary: Invalid number
+                  value:
+                    status: error
+                    message: "Query parameters must be valid decimal numbers"
+                    data: null
+                    metadata: {}
+
+components:
+  schemas:
+    SuccessResponse:
+      type: object
+      required: [status, message, data, metadata]
+      properties:
+        status:
+          type: string
+          enum: [success]
+        message:
+          type: string
+          example: "1 ZEPA zone found in the requested area."
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ZepaZone"
+        metadata:
+          $ref: "#/components/schemas/Metadata"
+
+    ErrorResponse:
+      type: object
+      required: [status, message, data, metadata]
+      properties:
+        status:
+          type: string
+          enum: [error]
+        message:
+          type: string
+        data:
+          type: "null"
+        metadata:
+          type: object
+
+    Metadata:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+          description: Number of ZEPA zones returned
+          example: 1
+
+    ZepaZone:
+      type: object
+      required: [id, name, noise_thresholds, geometry]
+      properties:
+        id:
+          type: string
+          description: Official Red Natura 2000 site code
+          example: ES3000009
+        name:
+          type: string
+          description: Official name of the protected area
+          example: "Cortados y cantiles de los ríos Jarama y Manzanares"
+        noise_thresholds:
+          $ref: "#/components/schemas/NoiseThresholds"
+        area_ha:
+          type: number
+          nullable: true
+          description: Area of the site in hectares
+          example: 27983.0
+        date_spa:
+          type: string
+          format: date
+          nullable: true
+          description: Date the site was officially designated as a ZEPA
+          example: "1993-12-01"
+        spa_legal_ref:
+          type: string
+          nullable: true
+          description: Legal reference of the SPA designation act
+        description:
+          type: string
+          nullable: true
+          description: Ecological description of the site
+        quality:
+          type: string
+          nullable: true
+          description: "Data quality indicator (G = good, M = moderate, P = poor)"
+          example: "G"
+        habitats:
+          type: array
+          description: Annex I habitats present in the site
+          items:
+            $ref: "#/components/schemas/Habitat"
+        species:
+          type: array
+          description: Annex I/II species recorded in the site
+          items:
+            $ref: "#/components/schemas/Species"
+        impacts:
+          type: array
+          description: Threats and pressures affecting the site
+          items:
+            $ref: "#/components/schemas/Impact"
+        management:
+          type: array
+          description: Management bodies responsible for the site
+          items:
+            $ref: "#/components/schemas/Management"
+        geometry:
+          $ref: "#/components/schemas/GeoJsonGeometry"
+
+    NoiseThresholds:
+      type: object
+      description: Noise level thresholds (dB LAeq) for ZEPA zones
+      required: [db_safe, db_warning]
+      properties:
+        db_safe:
+          type: integer
+          description: Below this level noise is considered safe for birds
+          example: 45
+        db_warning:
+          type: integer
+          description: Above this level noise is considered dangerous for birds
+          example: 60
+
+    Habitat:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Natura 2000 habitat type code
+          example: "6220"
+        description:
+          type: string
+          description: Habitat type name (English)
+          example: "Pseudo-steppe with grasses and annuals of the Thero-Brachypodietea"
+        priority:
+          type: boolean
+          description: True if this is a priority habitat type (marked with * in the Directive)
+          example: true
+        cover_ha:
+          type: number
+          nullable: true
+          description: Area covered by this habitat in hectares
+          example: 120.5
+        representativity:
+          type: string
+          nullable: true
+          description: "Representativity of the habitat: A = excellent, B = good, C = significant"
+          example: "B"
+        conservation:
+          type: string
+          nullable: true
+          description: "Conservation status: A = excellent, B = good, C = average/reduced"
+          example: "B"
+        global_assessment:
+          type: string
+          nullable: true
+          description: "Global assessment: A = excellent, B = good, C = significant"
+          example: "B"
+
+    Species:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Species code (prefix A = birds, M = mammals, P = plants, I = invertebrates, R = reptiles, F = fish)
+          example: "A136"
+        name:
+          type: string
+          description: Scientific name
+          example: "Charadrius dubius"
+        group:
+          type: string
+          description: Taxonomic group
+          enum: [Birds, Mammals, Plants, Amphibians, Reptiles, Fish, Invertebrates]
+          example: "Birds"
+        population_type:
+          type: string
+          nullable: true
+          description: "Type of population presence: p = permanent, r = breeding, c = concentration, w = wintering"
+          example: "c"
+        abundance:
+          type: string
+          nullable: true
+          description: "Abundance category: C = common, R = rare, V = very rare, P = present"
+          example: "P"
+        conservation:
+          type: string
+          nullable: true
+          description: "Conservation status: A = excellent, B = good, C = average/reduced"
+          example: "C"
+        global:
+          type: string
+          nullable: true
+          description: "Global assessment: A = excellent, B = good, C = significant"
+          example: "C"
+
+    Impact:
+      type: object
+      properties:
+        code:
+          type: string
+          description: EUNIS impact/pressure code
+          example: "D01.04"
+        description:
+          type: string
+          description: Description of the impact or pressure (English)
+          example: "railway lines, TGV"
+        intensity:
+          type: string
+          nullable: true
+          enum: [HIGH, MEDIUM, LOW]
+          example: "MEDIUM"
+        occurrence:
+          type: string
+          nullable: true
+          description: "Location of the impact: IN = inside the site, OUT = outside, BOTH = both"
+          enum: [IN, OUT, BOTH]
+          example: "IN"
+        type:
+          type: string
+          nullable: true
+          description: "Type of impact: N = negative, P = positive, NP = neutral"
+          enum: [N, P, NP]
+          example: "N"
+
+    Management:
+      type: object
+      properties:
+        org_name:
+          type: string
+          nullable: true
+          description: Name of the managing organisation
+        org_email:
+          type: string
+          nullable: true
+          description: Contact email of the managing organisation
+        plan_url:
+          type: string
+          nullable: true
+          description: URL of the management plan
+        measures:
+          type: string
+          nullable: true
+          description: Description of conservation measures in place
+
+    GeoJsonGeometry:
+      type: object
+      description: GeoJSON geometry in WGS84 (EPSG:4326)
+      required: [type, coordinates]
+      properties:
+        type:
+          type: string
+          enum: [Polygon, MultiPolygon]
+        coordinates:
+          type: array
+          description: GeoJSON coordinate array
